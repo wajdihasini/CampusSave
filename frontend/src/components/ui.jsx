@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 // ---------- Constantes et helpers partagés ----------
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, PHONE_RE = /^[0-9+\s]{8,15}$/;
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, PHONE_RE = /^(\+216|00216)?\s?\d{2}\s?\d{3}\s?\d{3}$/; // 8 chiffres, +216 facultatif
 export const STATUS = { pending_payment: "À payer", paid: "Payée · à retirer", collected: "Retirée", cancelled: "Annulée", expired: "Expirée" };
 export const ROLE = { student: "Étudiant", merchant: "Commerçant", admin: "Administrateur" };
 export const FB_ERR = {
@@ -62,6 +62,7 @@ const P = {
   bag: "M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2", store: "M4 9l1.5-5h13L20 9M4 9v11h16V9M4 9c0 2 3 2 4 0 1 2 3 2 4 0 1 2 3 2 4 0 1 2 4 2 4 0M10 20v-5h4v5",
   qr: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h3v3h-3zM20 14v3M14 20h3M20 20h0", trophy: "M8 4h8v5a4 4 0 0 1-8 0zM8 6H4c0 3 1 5 4 5M16 6h4c0 3-1 5-4 5M12 13v4M8 21h8M10 17h4",
   nav: "M3 11l18-8-8 18-2-8z", check: "M5 12l5 5 9-10", bolt: "M13 3L5 14h6l-1 7 8-11h-6z", gift: "M4 11h16v9H4zM3 8h18v3H3zM12 8v12M12 8c-3 0-5-1-5-3s3-2 5 3c2-5 5-5 5-3s-2 3-5 3",
+  home: "M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z", grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
   chart: "M4 20V4M4 20h16M8 16v-5M13 16V8M18 16v-9", spark: "M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z", phone: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z",
   shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z", trend: "M3 17l6-6 4 4 8-8M15 7h6v6", logout: "M10 4H5v16h5M15 8l4 4-4 4M19 12H9", cam: "M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
 };
@@ -81,14 +82,32 @@ const ART = {
   Dessert: { bg: "#ffb3c7", el: <g><path d="M66 88h68l-8 40H74z" fill="#f0472b" /><path d="M84 90l-3 36M100 90v36M116 90l3 36" stroke="#fff" strokeWidth="3" opacity=".7" /><ellipse cx="100" cy="86" rx="42" ry="14" fill="#fff" /><ellipse cx="100" cy="70" rx="31" ry="12" fill="#ffe3ec" /><ellipse cx="100" cy="56" rx="21" ry="10" fill="#fff" /><circle cx="100" cy="42" r="8" fill="#f0472b" /><path d="M100 34q4-10 12-10" stroke="#3f7d4e" strokeWidth="3" fill="none" strokeLinecap="round" /><rect x="78" y="72" width="7" height="3" rx="1.5" fill="#1d46e0" transform="rotate(-20 78 72)" /><rect x="116" y="66" width="7" height="3" rx="1.5" fill="#ffd84d" transform="rotate(25 116 66)" /></g> },
   Boisson: { bg: "#8ec5ff", el: <g><ellipse cx="100" cy="122" rx="48" ry="9" fill="#fff" opacity=".75" /><path d="M66 56h68l-6 58q-1 8-9 8H81q-8 0-9-8z" fill="#fff" /><path d="M69 76h62l-2.5 22H71.5z" fill="#1d46e0" /><path d="M134 66q22 2 20 20t-24 18" stroke="#fff" strokeWidth="7" fill="none" strokeLinecap="round" /><path d="M84 44q-7-9 0-17M100 44q-7-9 0-17M116 44q-7-9 0-17" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" /></g> },
   Autre: { bg: "#c9c2ff", el: <g><path d="M62 56h76l8 68H54z" fill="#d9a867" /><path d="M62 56h76l3 26H59z" fill="#c8924f" /><path d="M84 56q0-22 16-22t16 22" stroke="#8a5d2a" strokeWidth="5" fill="none" strokeLinecap="round" /><path d="M100 84l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#ffd84d" /></g> },
+  Pizza: { bg: "#ff8a6b", el: <g><circle cx="100" cy="80" r="56" fill="#d98a2b" /><circle cx="100" cy="80" r="49" fill="#f2b84b" /><circle cx="100" cy="80" r="42" fill="#f0472b" opacity=".85" /><circle cx="100" cy="80" r="40" fill="#ffe08a" opacity=".9" /><circle cx="84" cy="66" r="8" fill="#c8321c" /><circle cx="118" cy="72" r="8" fill="#c8321c" /><circle cx="96" cy="98" r="8" fill="#c8321c" /><circle cx="122" cy="98" r="6" fill="#c8321c" /><path d="M72 84l8-4M104 52l6 8M80 106l6 4" stroke="#3f7d4e" strokeWidth="4" strokeLinecap="round" /></g> },
+  Brik: { bg: "#ffd84d", el: <g><path d="M46 108L100 38l54 70z" fill="#d98a2b" /><path d="M58 102L100 48l42 54z" fill="#f2b84b" /><path d="M72 96l28-34M100 100l14-22" stroke="#c57a1f" strokeWidth="3" strokeLinecap="round" /><circle cx="100" cy="84" r="9" fill="#fff" /><circle cx="100" cy="84" r="4.5" fill="#ffb300" /><path d="M140 112q14-6 22 6-14 8-22-6z" fill="#b6e27c" stroke="#3f7d4e" strokeWidth="2" /></g> },
+  Sweets: { bg: "#ffb3c7", el: <g><ellipse cx="100" cy="112" rx="64" ry="14" fill="#fff" opacity=".8" /><g transform="rotate(45 64 84)"><rect x="40" y="60" width="48" height="48" rx="6" fill="#e9a23b" /><rect x="48" y="68" width="32" height="32" rx="4" fill="#f2c35b" /></g><g transform="rotate(45 136 84)"><rect x="112" y="60" width="48" height="48" rx="6" fill="#d98a2b" /><rect x="120" y="68" width="32" height="32" rx="4" fill="#e9a23b" /></g><g transform="rotate(45 100 52)"><rect x="78" y="30" width="44" height="44" rx="6" fill="#f2b84b" /><rect x="86" y="38" width="28" height="28" rx="4" fill="#ffd97a" /></g><circle cx="100" cy="52" r="5" fill="#3f7d4e" /><circle cx="64" cy="84" r="5" fill="#3f7d4e" /><circle cx="136" cy="84" r="5" fill="#3f7d4e" /></g> },
+  Juice: { bg: "#ffc27a", el: <g><path d="M120 28l-12 54" stroke="#f0472b" strokeWidth="6" strokeLinecap="round" /><path d="M70 50h60l-8 70q-1 8-9 8H87q-8 0-9-8z" fill="#fff" opacity=".9" /><path d="M74 72h52l-5 48q-1 8-9 8H88q-8 0-9-8z" fill="#ff9d1c" /><circle cx="130" cy="60" r="20" fill="#ffd84d" stroke="#ff9d1c" strokeWidth="4" /><path d="M130 40v40M110 60h40M116 46l28 28M144 46l-28 28" stroke="#ff9d1c" strokeWidth="2" /></g> },
+  Pasta: { bg: "#7fd1ae", el: <g><ellipse cx="100" cy="100" rx="66" ry="28" fill="#fff" /><ellipse cx="100" cy="98" rx="52" ry="20" fill="#f1ece0" /><path d="M58 94q20-40 42-30t42 30q-42 20-84 0z" fill="#f6cf6b" /><path d="M66 90q18-24 34-20M84 78q18-14 36-4M112 74q16 2 26 14M72 96q28 10 56 0" stroke="#e3b65a" strokeWidth="4" fill="none" strokeLinecap="round" /><circle cx="94" cy="72" r="6" fill="#f0472b" /><circle cx="114" cy="80" r="5" fill="#f0472b" /><path d="M100 58q6-10 14-6" stroke="#3f7d4e" strokeWidth="4" fill="none" strokeLinecap="round" /></g> },
   [BASKET]: { bg: "#1d46e0", el: <g><path d="M64 62h72l6 62H58z" fill="#ffd84d" /><path d="M82 62q0-26 18-26t18 26" stroke="#f0472b" strokeWidth="6" fill="none" strokeLinecap="round" /><rect x="58" y="58" width="84" height="12" rx="4" fill="#f0472b" /><text x="100" y="114" textAnchor="middle" fontSize="48" fontWeight="800" fill="#1d46e0" fontFamily="Bricolage Grotesque, sans-serif">?</text><path d="M34 40l3 8 8 3-8 3-3 8-3-8-8-3 8-3zM164 30l2.5 6.5 6.5 2.5-6.5 2.5-2.5 6.5-2.5-6.5-6.5-2.5 6.5-2.5zM160 100l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff" /></g> },
 };
-export function FoodArt({ category, className = "" }) {
-  const a = ART[category] || ART.Autre;
+const KEYED = [[/pizza|calzone/i, "Pizza"], [/brik|mlawi|fricass/i, "Brik"], [/baklawa|makroudh|zlabia|kaak|bambalouni|baklava/i, "Sweets"], [/jus |jus$|smoothie|orange/i, "Juice"], [/pâtes|carbonara|spaghetti/i, "Pasta"]];
+const PALETTE = ["#ffd84d", "#ff8a6b", "#7fd1ae", "#b6e27c", "#ffb3c7", "#8ec5ff", "#c9c2ff", "#ffc27a"];
+const hash = (t) => [...String(t)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+// Sans photo : illustration choisie d'après le titre (pizza, brik, pâtisserie…) sinon la catégorie, avec une couleur de fond variée.
+export function FoodArt({ category, title = "", className = "" }) {
+  const key = category === BASKET ? BASKET : KEYED.find(([re]) => re.test(title))?.[1] || category, a = ART[key] || ART.Autre;
+  const bg = title && category !== BASKET ? PALETTE[hash(title) % PALETTE.length] : a.bg;
   return <svg className={`foodart ${className}`} viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice" role="img" aria-label={category}>
-    <rect width="200" height="150" fill={a.bg} /><circle cx="100" cy="80" r="62" fill="#fff" opacity=".28" /><circle cx="22" cy="24" r="4" fill="#fff" opacity=".5" /><circle cx="178" cy="122" r="6" fill="#fff" opacity=".4" />{a.el}</svg>;
+    <rect width="200" height="150" fill={bg} /><circle cx="100" cy="80" r="62" fill="#fff" opacity=".28" /><circle cx="22" cy="24" r="4" fill="#fff" opacity=".5" /><circle cx="178" cy="122" r="6" fill="#fff" opacity=".4" />{a.el}</svg>;
 }
-export const OfferVisual = ({ o }) => o.photo ? <img src={o.photo} alt={o.title} loading="lazy" /> : <FoodArt category={o.category} />;
+// Photo réelle avec apparition en fondu ; si l'image ne charge pas, l'illustration prend le relais.
+export function OfferVisual({ o }) {
+  const [bad, setBad] = useState(false), [loaded, setLoaded] = useState(false);
+  useEffect(() => { setBad(false); setLoaded(false); }, [o.photo]);
+  if (!o.photo || bad) return <FoodArt category={o.category} title={o.title} />;
+  return <img className={`photo ${loaded ? "ok" : ""}`} src={o.photo} alt={o.title} loading="lazy" decoding="async"
+    ref={el => { if (el?.complete && el.naturalWidth) setLoaded(true); }} onLoad={() => setLoaded(true)} onError={() => setBad(true)} />;
+}
+export const isWikimedia = (url = "") => /upload\.wikimedia\.org/.test(url);
 
 // ---------- Carte produit (ticket) ----------
 export function OfferCard({ o, onQuick, reason }) {
@@ -119,7 +138,7 @@ export function Header({ me, perm, onNotif, onLogout }) {
   useEffect(() => { setOpen(false); setMenu(false); }, [loc.pathname]);
   useEffect(() => { const f = (e) => { if (box.current && !box.current.contains(e.target)) setMenu(false); }; document.addEventListener("mousedown", f); return () => document.removeEventListener("mousedown", f); }, []);
   const admin = me?.role === "admin";
-  const links = admin ? [["/admin", "Administration"], ["/dashboard", "Statistiques"]] : [["/", "Accueil"], ["/catalog", "Catalogue"], ["/radar", "Radar"], ["/impact", "Impact"],
+  const links = admin ? [["/admin", "Espace admin"], ["/catalog", "Catalogue"], ["/impact", "Impact"]] : [["/", "Accueil"], ["/catalog", "Catalogue"], ["/radar", "Radar"], ["/impact", "Impact"],
     ...(me?.role === "merchant" ? [["/shop", "Mon commerce"]] : []), ...(me ? [["/orders", "Commandes"]] : [])];
   return <header className="topbar"><div className="topbar-in">
     <Link to={admin ? "/admin" : "/"} aria-label="CampusSave, accueil"><Logo /></Link>
@@ -130,49 +149,23 @@ export function Header({ me, perm, onNotif, onLogout }) {
       {me ? <div className="usermenu" ref={box}>
         <button className="avatar-btn" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Menu du compte"><span className="avatar">{(me.name || "?")[0].toUpperCase()}</span><span className="uname">{me.name.split(" ")[0]}</span></button>
         {menu && <div className="dropdown" role="menu"><p><b>{me.name}</b><small>{ROLE[me.role]}</small></p>
-          {!admin && <Link to="/orders"><Icon name="qr" size={16} />Mes commandes</Link>}{me.role === "merchant" && <Link to="/shop"><Icon name="store" size={16} />Mon commerce</Link>}
+          {admin && <Link to="/admin"><Icon name="shield" size={16} />Espace admin</Link>}{!admin && <Link to="/orders"><Icon name="qr" size={16} />Mes commandes</Link>}{me.role === "merchant" && <Link to="/shop"><Icon name="store" size={16} />Mon commerce</Link>}
           <Link to="/dashboard"><Icon name="chart" size={16} />Statistiques</Link><Link to="/profile"><Icon name="user" size={16} />Profil</Link>
           <button onClick={onLogout}><Icon name="logout" size={16} />Déconnexion</button></div>}
-      </div> : <div className="auth-links"><Link className="link" to="/login">Connexion</Link><Link className="btn small" to="/login?signup=1">S'inscrire</Link></div>}
+      </div> : <div className="auth-links"><Link className="btn small ghost" to="/login">Se connecter</Link><Link className="btn small" to="/login?signup=1">Créer un compte</Link></div>}
       <button className="icon-btn burger" onClick={() => setOpen(!open)} aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={open}><Icon name={open ? "close" : "menu"} /></button>
     </div></div></header>;
 }
 
 // ---------- Pied de page ----------
 export function Footer() {
-  return <footer className="footer">
-    <div className="footer-box">
-      <div className="footer-in">
-        <div className="footer-brand">
-          <Logo />
-          <p>Les invendus des restaurants et cafétérias autour de l'ESSECT, à prix réduit. Moins de gaspillage, plus de bons plans pour les étudiants.</p>
-          <span className="footer-badge">✦ Anti-gaspi &amp; Étudiant</span>
-        </div>
-        <div className="footer-col">
-          <h4>Explorer</h4>
-          <Link to="/catalog">Catalogue</Link>
-          <Link to="/catalog?cat=Panier%20surprise">Paniers surprise</Link>
-          <Link to="/radar">Campus Radar</Link>
-          <Link to="/impact">Impact et EcoPoints</Link>
-        </div>
-        <div className="footer-col">
-          <h4>Commerçants</h4>
-          <Link to="/login?signup=1">Devenir partenaire</Link>
-          <Link to="/shop">Mon commerce</Link>
-          <Link to="/dashboard">Statistiques</Link>
-        </div>
-        <div className="footer-col footer-card-project">
-          <h4>Le projet</h4>
-          <p>Projet pédagogique intégrateur, 3ème année E-Business, ESSECT.</p>
-          <p>Modules Intégration Web et Développement Mobile.</p>
-        </div>
-      </div>
-      <div className="footer-end">
-        <small>© {new Date().getFullYear()} CampusSave. Réserver aujourd'hui, c'est jeter moins demain.</small>
-        <span className="footer-loc">📍 Autour de l'ESSECT</span>
-      </div>
-    </div>
-  </footer>;
+  return <footer className="footer"><div className="footer-in">
+    <div className="footer-brand"><Logo light /><p>Les invendus des restaurants et cafétérias autour de l'ESSECT, à prix réduit. Moins de gaspillage, plus de bons plans pour les étudiants.</p>
+      <Link className="btn lemon small" to="/catalog">Voir les offres du jour</Link></div>
+    <div><h4>Explorer</h4><Link to="/catalog">Catalogue</Link><Link to="/catalog?cat=Panier%20surprise">Paniers surprise</Link><Link to="/radar">Campus Radar</Link><Link to="/impact">Impact et EcoPoints</Link></div>
+    <div><h4>Aide</h4><Link to="/about">Comment ça marche</Link><Link to="/about#faq">Questions fréquentes</Link><Link to="/login">Mon compte</Link><Link to="/orders">Mes commandes</Link></div>
+    <div><h4>Commerçants</h4><Link to="/partners">Devenir partenaire</Link><Link to="/login?signup=1">Créer un compte pro</Link><Link to="/shop">Mon commerce</Link></div>
+  </div><div className="footer-end"><small>© {new Date().getFullYear()} CampusSave · Projet pédagogique de 3ème année E-Business, ESSECT (modules Intégration Web et Développement Mobile).</small><small>Photos de démonstration : <a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (licences libres, auteurs crédités sur chaque fiche produit).</small></div></footer>;
 }
 
 // ---------- Section de page et graphique en barres ----------
@@ -184,4 +177,34 @@ export function BarChart({ data, k, label, unit = "" }) {
   return <div className="panel chart"><h3>{label}</h3>
     <div className="bars" role="img" aria-label={`${label} : ${data.map(d => `${d.date} ${d[k]}${unit}`).join(", ")}`}>
       {data.map(d => <div className="bar-col" key={d.date}><span className="bar-val">{d[k]}</span><div className="bar" style={{ height: `${Math.round((d[k] / max) * 110)}px` }} /><small>{d.date.slice(5)}</small></div>)}</div></div>;
+}
+
+// ---------- Pagination ----------
+export const paginate = (arr, page, size) => arr.slice((page - 1) * size, page * size);
+export function Pager({ page, pages, onChange }) {
+  if (pages <= 1) return null;
+  const set = new Set([1, pages, page - 1, page, page + 1]), nums = [...set].filter(n => n >= 1 && n <= pages).sort((a, b) => a - b), out = [];
+  nums.forEach((n, i) => { if (i && n - nums[i - 1] > 1) out.push("…" + n); out.push(n); });
+  const go = (n) => { onChange(n); document.getElementById("main")?.scrollIntoView({ behavior: "smooth" }); };
+  return <nav className="pager" aria-label="Pagination">
+    <button onClick={() => go(page - 1)} disabled={page <= 1}>Précédent</button>
+    {out.map(n => typeof n === "string" ? <span key={n} aria-hidden="true">…</span> : <button key={n} className={n === page ? "on" : ""} aria-current={n === page ? "page" : undefined} onClick={() => go(n)}>{n}</button>)}
+    <button onClick={() => go(page + 1)} disabled={page >= pages}>Suivant</button></nav>;
+}
+export const Avatar = ({ name = "?", size = 36 }) => <span className="avatar" style={{ width: size, height: size, fontSize: size * 0.42 }}>{name.trim()[0]?.toUpperCase() || "?"}</span>;
+
+// ---------- Navigation mobile (barre du bas), messages de confirmation ----------
+export function BottomNav({ me }) {
+  if (me?.role === "admin") return null;
+  const items = !me ? [["/", "Accueil", "home", true], ["/catalog", "Catalogue", "grid"], ["/radar", "Radar", "pin"], ["/login", "Connexion", "user"]]
+    : me.role === "merchant" ? [["/", "Accueil", "home", true], ["/catalog", "Catalogue", "grid"], ["/shop", "Mon commerce", "store"], ["/orders", "Commandes", "qr"], ["/profile", "Profil", "user"]]
+    : [["/", "Accueil", "home", true], ["/catalog", "Catalogue", "grid"], ["/radar", "Radar", "pin"], ["/orders", "Commandes", "qr"], ["/profile", "Profil", "user"]];
+  return <nav className="bottomnav" aria-label="Navigation mobile">{items.map(([to, l, ic, end]) => <NavLink key={to} to={to} end={end} className={({ isActive }) => (isActive ? "active" : "")}><Icon name={ic} size={22} /><span>{l}</span></NavLink>)}</nav>;
+}
+export const toast = (text, kind = "ok") => window.dispatchEvent(new CustomEvent("cs-toast", { detail: { text, kind, id: Date.now() } }));
+export function Toaster() {
+  const [t, setT] = useState(null);
+  useEffect(() => { const f = (e) => setT(e.detail); window.addEventListener("cs-toast", f); return () => window.removeEventListener("cs-toast", f); }, []);
+  useEffect(() => { if (!t) return; const id = setTimeout(() => setT(null), 4500); return () => clearTimeout(id); }, [t]);
+  return t ? <div className={`snack ${t.kind}`} role="status" aria-live="polite"><span>{t.text}</span><button onClick={() => setT(null)} aria-label="Fermer">×</button></div> : null;
 }

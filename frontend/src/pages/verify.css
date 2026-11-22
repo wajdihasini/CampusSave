@@ -1,0 +1,12 @@
+.verify{min-height:100vh;background:var(--paper);display:flex;flex-direction:column}
+.verify>header{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:2px solid var(--ink);background:#fff}.verify>header .link{margin:0}
+.verify main{flex:1;display:grid;place-items:center;padding:2rem 1rem}
+.verify-card{width:100%;max-width:480px;background:#fff;border:2px solid var(--ink);border-radius:var(--r-l);box-shadow:var(--hard);padding:2.2rem 2rem;text-align:center;display:flex;flex-direction:column;align-items:stretch}
+.verify-ico{width:64px;height:64px;border-radius:50%;background:var(--lemon);border:2px solid var(--ink);display:grid;place-items:center;margin:0 auto 1rem}
+.verify-card h1{font-size:1.8rem}.verify-card .muted{margin-bottom:1.4rem}
+.code{display:flex;gap:.5rem;justify-content:center;margin:.4rem 0 1rem}
+.code input{width:52px;min-width:0;height:62px;padding:0;text-align:center;font:800 1.7rem var(--font-d);border-radius:12px}
+.code input:focus{border-color:var(--cobalt);background:#f3f6ff}
+.verify-card .switch{margin-top:1.2rem}.verify-card form{text-align:left;margin-top:1rem;padding-top:1rem;border-top:2px dashed var(--line)}
+.verify-card .link{align-self:center;margin:.8rem 0 0}
+@media (max-width:420px){.code{gap:.3rem}.code input{width:44px;height:54px;font-size:1.4rem}.verify-card{padding:1.6rem 1.2rem}}

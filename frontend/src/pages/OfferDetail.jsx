@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api.js";
-import { Empty, Err, Icon, OfferCard, OfferVisual, Section, fmt, isBasket, isNew, pct, useTitle } from "../components/ui.jsx";
+import { Empty, Err, Icon, OfferCard, OfferVisual, Section, fmt, isBasket, isNew, isWikimedia, pct, useTitle } from "../components/ui.jsx";
 import { useReserve } from "../components/useReserve.js";
 
 export default function OfferDetail({ me }) {
   const { id } = useParams(), { reserve, msg } = useReserve(me);
-  const [o, setO] = useState(null), [others, setOthers] = useState([]), [qty, setQty] = useState(1), [err, setErr] = useState(""), [busy, setBusy] = useState(false);
+  const [zoom, setZoom] = useState(false), [o, setO] = useState(null), [others, setOthers] = useState([]), [qty, setQty] = useState(1), [err, setErr] = useState(""), [busy, setBusy] = useState(false);
   useTitle(o?.title);
+  useEffect(() => { const on = !!o && (!me || me.role === "student"); document.body.classList.toggle("has-buybar", on); return () => document.body.classList.remove("has-buybar"); }, [o?.id, me?.role]); // la barre de réservation remplace la navigation du bas
+  useEffect(() => { if (!zoom) return; const f = (e) => e.key === "Escape" && setZoom(false); window.addEventListener("keydown", f); return () => window.removeEventListener("keydown", f); }, [zoom]);
   useEffect(() => {
     setO(null); setErr(""); setQty(1); window.scrollTo({ top: 0 });
     api(`/api/offers/${id}`).then(setO).catch(x => setErr(x.message));
@@ -25,7 +27,7 @@ export default function OfferDetail({ me }) {
   return <div className="page">
     <nav className="crumbs" aria-label="Fil d'Ariane"><Link to="/catalog">Catalogue</Link><span>/</span><Link to={`/catalog?cat=${encodeURIComponent(o.category)}`}>{o.category}</Link><span>/</span><b>{o.title}</b></nav>
     <div className="detail">
-      <div className="detail-media"><OfferVisual o={o} /><span className="sticker big">-{pct(o)}%</span>
+      <div className={`detail-media ${o.photo ? "zoomable" : ""}`} {...(o.photo ? { role: "button", tabIndex: 0, "aria-label": "Agrandir la photo", onClick: () => setZoom(true), onKeyDown: (e) => e.key === "Enter" && setZoom(true) } : {})}><OfferVisual o={o} /><span className="sticker big">-{pct(o)}%</span>
         <span className="ticket-badges">{isBasket(o) && <em className="tag basket">Surprise</em>}{isNew(o) && <em className="tag new">Nouveau</em>}{o.sold >= 3 && <em className="tag hot">Populaire</em>}</span></div>
       <div className="detail-info">
         <Link className="chip on static" to={`/catalog?cat=${encodeURIComponent(o.category)}`}>{o.category}</Link>
@@ -45,7 +47,10 @@ export default function OfferDetail({ me }) {
           : <p className="note">Connecté en tant que {me.role === "merchant" ? "commerçant" : "administrateur"} : seuls les étudiants peuvent réserver.</p>}
         <p className="fine"><Icon name="shield" size={16} />Après la réservation, tu as 15 minutes pour payer. Passé ce délai, le stock est remis en vente.</p>
         {hasGeo && <p className="fine"><Icon name="pin" size={16} /><Link to="/radar">Voir sur le Campus Radar</Link><a href={`https://www.google.com/maps/dir/?api=1&destination=${o.shopLat},${o.shopLng}`} target="_blank" rel="noopener noreferrer">Itinéraire</a></p>}
+        {isWikimedia(o.photo) && <p className="fine"><Icon name="cam" size={16} />Photo : {o.photoCredit || "auteur indiqué sur la page source"}, via {String(o.photoSource || "").startsWith("https://commons.wikimedia.org/") ? <a href={o.photoSource} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> : "Wikimedia Commons"}</p>}
       </div></div>
+    {student && !soldOut && <div className="buybar"><div><b>{fmt(o.price * q)} TND</b><small>{q} × {fmt(o.price)} TND</small></div><button className="btn" onClick={go} disabled={busy}>Réserver</button></div>}
+    {zoom && <div className="lightbox" role="dialog" aria-modal="true" aria-label={o.title} onClick={() => setZoom(false)}><button className="lightbox-close" aria-label="Fermer">×</button><img src={o.photo} alt={o.title} /></div>}
     {sameShop.length > 0 && <Section title={`Aussi chez ${o.shopName}`}><div className="grid">{sameShop.map(x => <OfferCard key={x.id} o={x} />)}</div></Section>}
     {similar.length > 0 && <Section title="Dans la même catégorie"><div className="grid">{similar.map(x => <OfferCard key={x.id} o={x} />)}</div></Section>}
   </div>;
